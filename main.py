@@ -1,15 +1,43 @@
 import pandas as pd
-from fastapi import FastAPI
+from fastapi import FastAPI, Header, HTTPException, Depends
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from sqlalchemy import create_engine
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from dotenv import load_dotenv
+from typing import Optional
 
 load_dotenv()
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
+
+USER_ID = os.environ.get("VALID_USER_123_ID")
+API_KEY = os.environ.get("VALID_USER_123_KEY")
+
+if not USER_ID or not API_KEY:
+    raise ValueError("User credentials not found in environment variables. Please check your .env file.")
+
+def verify_api_key(user_id: str, api_key: str) -> bool:
+    return user_id == USER_ID and api_key == API_KEY
+
+def authenticate_user(
+    user_id: Optional[str] = Header(None, alias="UID"),
+    api_key: Optional[str] = Header(None, alias="APIKey")
+):
+    if not user_id or not api_key:
+        raise HTTPException(
+            status_code=401,
+            detail="Missing authentication headers"
+        )
+    
+    if not verify_api_key(user_id, api_key):
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid user ID or API key"
+        )
+    
+    return {"user_id": user_id, "api_key": api_key}
 
 app = FastAPI()
 
@@ -55,7 +83,11 @@ def initialize_recommendation_model():
 initialize_recommendation_model()
 
 @app.get("/recommend")
-def recommend(productid: str, top_n: int = 5):
+def recommend(
+    productid: str, 
+    top_n: int = 5,
+    auth: dict = Depends(authenticate_user)
+):
     if productid not in indices:
         return {"error": "Product not found"}
 
@@ -73,7 +105,11 @@ def recommend(productid: str, top_n: int = 5):
             "category": row.get("category", "N/A"),
             "listingPrice": row["listingPrice"],
         })
-    return results
+    
+    return {
+        "user_id": auth["user_id"],
+        "recommendations": results
+    }
 
 if __name__ == "__main__":
     import uvicorn
