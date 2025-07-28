@@ -12,11 +12,11 @@ load_dotenv()
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
-USER_ID = os.environ.get("VALID_USER_123_ID")
-API_KEY = os.environ.get("VALID_USER_123_KEY")
+USER_ID = os.environ.get("UID")
+API_KEY = os.environ.get("API_KEY")
 
 if not USER_ID or not API_KEY:
-    raise ValueError("User credentials not found in environment variables. Please check your .env file.")
+    raise ValueError("Not found")
 
 def verify_api_key(user_id: str, api_key: str) -> bool:
     return user_id == USER_ID and api_key == API_KEY
