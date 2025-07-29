@@ -11,10 +11,10 @@ from typing import Optional
 load_dotenv()
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
-
+print("Database URL", DATABASE_URL)
 API_KEY = os.environ.get("API_KEY")
 
-if API_KEY:
+if not API_KEY:
     raise ValueError("Not found")
 
 def verify_api_key(

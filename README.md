@@ -15,3 +15,10 @@ pip install -r requirements.txt
 ```
 uvicorn main:app --reload --port 8000
 ```
+
+## Test in postman
+
+```
+curl --location 'http://localhost:8000/recommend?productid=<your_product_id>' \
+--header 'APIKey: <API_KEY>'
+```
