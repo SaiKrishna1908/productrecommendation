@@ -12,32 +12,27 @@ load_dotenv()
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
-USER_ID = os.environ.get("UID")
 API_KEY = os.environ.get("API_KEY")
 
-if not USER_ID or not API_KEY:
+if API_KEY:
     raise ValueError("Not found")
 
-def verify_api_key(user_id: str, api_key: str) -> bool:
-    return user_id == USER_ID and api_key == API_KEY
+def verify_api_key(
+    api_key: str) -> bool:
+    return  api_key == API_KEY
 
-def authenticate_user(
-    user_id: Optional[str] = Header(None, alias="UID"),
+def authenticate_user(    
     api_key: Optional[str] = Header(None, alias="APIKey")
 ):
-    if not user_id or not api_key:
-        raise HTTPException(
-            status_code=401,
-            detail="Missing authentication headers"
-        )
     
-    if not verify_api_key(user_id, api_key):
+    
+    if not verify_api_key(api_key):
         raise HTTPException(
             status_code=401,
             detail="Invalid user ID or API key"
         )
     
-    return {"user_id": user_id, "api_key": api_key}
+    return {"api_key": api_key}
 
 app = FastAPI()
 
@@ -106,8 +101,7 @@ def recommend(
             "listingPrice": row["listingPrice"],
         })
     
-    return {
-        "user_id": auth["user_id"],
+    return {        
         "recommendations": results
     }
 
