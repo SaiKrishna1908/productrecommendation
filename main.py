@@ -38,7 +38,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["*"],  # Configure this based on your frontend domain
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -76,6 +76,10 @@ def initialize_recommendation_model():
     indices = pd.Series(df.index, index=df['id'])
 
 initialize_recommendation_model()
+
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}
 
 @app.get("/recommend")
 def recommend(
